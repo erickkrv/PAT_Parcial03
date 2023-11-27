@@ -10,26 +10,35 @@ TimeMap::TimeMap()
 
 void TimeMap::set(string key, string value, int timestamp)
 {
-    if (mapa.find(key) == mapa.end()) {
-        mapa[key] = map<int, string>();
-
-    }
-    mapa[key][timestamp] = value;
+    map[key].emplace_back(valor{ timestamp, value });
 }
 
 string TimeMap::get(string key, int timestamp)
 {
-    if (mapa.find(key) == mapa.end()) {
+    if (map.find(key) == map.end())
         return "";
+
+    vector<valor>& valores = map[key];
+
+    int inicio = 0, medio = 0, fin = valores.size();
+
+    if (valores[inicio].timestamp > timestamp)
+        return "";
+
+    if (valores[fin - 1].timestamp <= timestamp)
+        return valores[fin - 1].value;
+
+    while (inicio < fin) {
+        medio = (fin + inicio) >> 1;
+
+        if (valores[medio].timestamp == timestamp)
+            return valores[medio].value;
+
+        if (valores[medio].timestamp < timestamp)
+            inicio = medio + 1;
+        else
+            fin = medio;
     }
 
-    auto& map2 = mapa[key];
-    auto it = map2.upper_bound(timestamp);
-
-    if (it == map2.begin()) {
-        return "";
-    }
-
-    --it;
-    return it->second;
+    return valores[medio].value;
 }
